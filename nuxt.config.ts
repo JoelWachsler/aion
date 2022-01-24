@@ -13,17 +13,17 @@ const config: NuxtConfig = {
     titleTemplate: '%s - nuxt-electron-testing',
     title: 'nuxt-electron-testing',
     htmlAttrs: {
-      lang: 'en'
+      lang: 'en',
     },
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { hid: 'description', name: 'description', content: '' },
-      { name: 'format-detection', content: 'telephone=no' }
+      { name: 'format-detection', content: 'telephone=no' },
     ],
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
-    ]
+      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+    ],
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
@@ -42,7 +42,8 @@ const config: NuxtConfig = {
     // https://go.nuxtjs.dev/typescript
     '@nuxt/typescript-build',
     // https://go.nuxtjs.dev/vuetify
-    '@nuxtjs/vuetify'
+    '@nuxtjs/vuetify',
+    '@nuxtjs/composition-api/module',
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
@@ -62,32 +63,28 @@ const config: NuxtConfig = {
           info: colors.teal.lighten1,
           warning: colors.amber.base,
           error: colors.deepOrange.accent4,
-          success: colors.green.accent3
-        }
-      }
-    }
+          success: colors.green.accent3,
+        },
+      },
+    },
   },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
-    publicPath: './',
+    publicPath: process.env.NODE_ENV === 'production' ? './' : undefined,
     extend: (config, ctx) => {
       if (!ctx.isDev) {
         if (config.output) {
           config.output.publicPath = './'
         }
       }
-    }
+    },
   },
 
   router: {
-    mode: 'hash',
-    base: './'
-  }
-
-  // router: {
-  //   base: './'
-  // }
+    mode: process.env.NODE_ENV === 'production' ? 'hash' : undefined,
+    base: process.env.NODE_ENV === 'production' ? './' : undefined,
+  },
 }
 
 export default config

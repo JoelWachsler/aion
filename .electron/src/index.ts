@@ -7,14 +7,17 @@ const createWindow = () => {
     width: 1920,
     height: 1080,
     darkTheme: true,
+    webPreferences: {
+      contextIsolation: false,
+      preload: path.join(__dirname, 'preload.js'),
+    }
   })
 
-  const file = path.join(__dirname, '../../dist/index.html')
-  win.loadFile(file)
-  // const filePath = `file://${file}`
-  // win.loadURL(filePath).catch(e => {
-  //   console.error(e)
-  // })
+  win.webContents.toggleDevTools()
+
+  win.loadFile(path.join(__dirname, '../../dist/index.html'))
+
+  return win
 }
 
 // const exec = (cmd: string): Promise<string> => {
@@ -83,18 +86,22 @@ class SnapshotManager {
 }
 
 app.whenReady().then(async () => {
-  createWindow()
+  const win = createWindow()
 
   const manager = new SnapshotManager()
   manager.createSnapshot('init')
 
   lockedMonitor({
     locked: () => {
-      manager.createSnapshot('locked')
+      // manager.createSnapshot('locked')
+      console.log('sending locked message')
+      win.webContents.send('locked-state', true)
     },
     unlocked: () => {
-      manager.createSnapshot('unlocked')
-      manager.printSnapshots()
+      console.log('sending unlocked message')
+      win.webContents.send('locked-state', false)
+      // manager.createSnapshot('unlocked')
+      // manager.printSnapshots()
     }
   })
 

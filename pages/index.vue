@@ -77,7 +77,14 @@
 </template>
 
 <script>
-export default {
-  name: 'IndexPage'
-}
+import { defineComponent } from '@nuxtjs/composition-api'
+
+export default defineComponent({
+  setup() {
+    window?.ipcRenderer.on('locked-state', (_, message) => {
+      console.log(`Locked state update: ${message}`)
+    })
+    console.log('testing')
+  },
+})
 </script>
