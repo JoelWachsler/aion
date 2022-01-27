@@ -26,12 +26,13 @@
     "types": [
       "@nuxt/types",
       "@types/node",
-      "vuetify"
+      "vuetify",
+      "@types/jest"
     ]
   },
   "exclude": [
     "node_modules",
     ".nuxt",
     "dist"
-  ]
+  ],
 }

@@ -1,90 +1,45 @@
 <template>
-  <v-row justify="center" align="center">
-    <v-col cols="12" sm="8" md="6">
-      <v-card class="logo py-4 d-flex justify-center">
-        <NuxtLogo />
-        <VuetifyLogo />
-      </v-card>
-      <v-card>
-        <v-card-title class="headline">
-          Welcome to the Vuetify + Nuxt.js template
-        </v-card-title>
-        <v-card-text>
-          <p>Vuetify is a progressive Material Design component framework for Vue.js. It was designed to empower developers to create amazing applications.</p>
-          <p>
-            For more information on Vuetify, check out the <a
-              href="https://vuetifyjs.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              documentation
-            </a>.
-          </p>
-          <p>
-            If you have questions, please join the official <a
-              href="https://chat.vuetifyjs.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="chat"
-            >
-              discord
-            </a>.
-          </p>
-          <p>
-            Find a bug? Report it on the github <a
-              href="https://github.com/vuetifyjs/vuetify/issues"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="contribute"
-            >
-              issue board
-            </a>.
-          </p>
-          <p>Thank you for developing with Vuetify and I look forward to bringing more exciting features in the future.</p>
-          <div class="text-xs-right">
-            <em><small>&mdash; John Leider</small></em>
-          </div>
-          <hr class="my-3">
-          <a
-            href="https://nuxtjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Nuxt Documentation
-          </a>
-          <br>
-          <a
-            href="https://github.com/nuxt/nuxt.js"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Nuxt GitHub
-          </a>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            color="primary"
-            nuxt
-            :to="{ name: 'inspire' }"
-          >
-            Continue
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-col>
-  </v-row>
+  <v-container>
+    <v-row>
+      Current state: {{ locked }}
+    </v-row>
+    <v-row>
+      Counter: {{ workCounter }}
+    </v-row>
+  </v-container>
 </template>
 
-<script>
-import { defineComponent } from '@nuxtjs/composition-api'
+<script lang="ts">
+import { computed, defineComponent, onMounted, ref } from '@nuxtjs/composition-api'
+import { ipcRenderer } from 'electron'
+
+type WindowWithIpc = typeof window & { ipcRenderer?: typeof ipcRenderer }
 
 export default defineComponent({
   setup() {
-    window?.ipcRenderer.on('locked-state', (_, message) => {
-      console.log(`Locked state update: ${message}`)
+    const locked = ref(false)
+    const initDate = ref(new Date())
+    const currentDate = ref(new Date())
+    const workCounter = computed(() => {
+      const seconds = Math.round((currentDate.value.getTime() - initDate.value.getTime()) / 1000)
+      return new Date(seconds * 1000).toISOString().substr(11, 8)
     })
-    console.log('testing')
+
+    onMounted(() => {
+      setInterval(() => {
+        currentDate.value = new Date()
+      }, 1000)
+    })
+
+    const win = window as WindowWithIpc
+    win.ipcRenderer?.on('locked-state', (_, message) => {
+      locked.value = Boolean(message)
+    })
+
+    return {
+      locked,
+      workCounter,
+    }
   },
 })
 </script>

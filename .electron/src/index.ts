@@ -20,20 +20,6 @@ const createWindow = () => {
   return win
 }
 
-// const exec = (cmd: string): Promise<string> => {
-//   return new Promise((res, err) => {
-//     child_process.exec(cmd, (error, stdout, stderr) => {
-//       if (error) {
-//         err(error)
-//       } else if (stderr) {
-//         err(stderr)
-//       } else {
-//         res(stdout)
-//       }
-//     })
-//   })
-// }
-
 type MaybePromise<T = void> = Promise<T> | T
 
 interface LockedMonitorArgs {
@@ -102,7 +88,7 @@ app.whenReady().then(async () => {
       win.webContents.send('locked-state', false)
       // manager.createSnapshot('unlocked')
       // manager.printSnapshots()
-    }
+    },
   })
 
   // const { stdout } = child_process.spawn('gdbus monitor -y -d org.freedesktop.login1')
@@ -123,19 +109,3 @@ app.on('window-all-closed', () => {
   console.log('all windows closed')
   if (process.platform !== 'darwin') app.quit()
 })
-
-// app.on('browser-window-blur', () => {
-//   // const n = new Notification({
-//   //   body: 'Hello'
-//   // })
-
-//   // n.show()
-// })
-
-// app.on('activate', () => {
-//   console.log('activate')
-// })
-
-// app.on('did-become-active', () => {
-//   console.log('did-become-active')
-// })
