@@ -1,4 +1,4 @@
-import { convertResultToReport } from './useReport'
+import { convertResultToReportPresentation } from './useReport'
 import { TimeAggregatorResult } from '~/.electron/src/timeAggregator'
 
 it('should convert result to report', () => {
@@ -20,7 +20,7 @@ it('should convert result to report', () => {
     },
   ]
 
-  const report = convertResultToReport(result, { from: new Date(2000, 0, 1), to: new Date(2000, 0, 3) })
+  const report = convertResultToReportPresentation(result, { from: new Date(2000, 0, 1), to: new Date(2000, 0, 3) })
   expect(report).toEqual([
     {
       name: 'First',

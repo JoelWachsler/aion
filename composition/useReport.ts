@@ -25,7 +25,10 @@ const incrementDateByOneDay = (date: Date): Date => {
   return new Date(date.getTime() + 24 * 3600 * 1000)
 }
 
-export const convertResultToReport = (result: TimeAggregatorResult[], interval: Interval): ReportValue[] => {
+export const convertResultToReportPresentation = (
+  result: TimeAggregatorResult[],
+  interval: Interval,
+): ReportValue[] => {
   // name -> dateString -> seconds
   const names = new Map<string, Map<string, number>>()
 
@@ -44,7 +47,6 @@ export const convertResultToReport = (result: TimeAggregatorResult[], interval: 
 
   for (const [name, dateStringLookup] of names.entries()) {
     const nameReport: ReportValue = { name }
-
     let currentDate = interval.from
 
     while (currentDate.getTime() <= interval.to.getTime()) {
@@ -67,12 +69,16 @@ interface UseReportArgs {
 }
 
 export const useReport = ({ result, interval }: UseReportArgs) => {
-  const report = computed(() => convertResultToReport(result.value, interval.value))
+  const report = computed(() => convertResultToReportPresentation(result.value, interval.value))
 
   return {
     report,
     headers: computed<DataTableHeader[]>(() => {
       const [firstReportValue] = report.value
+
+      if (!firstReportValue) {
+        return []
+      }
 
       const dates = Object.keys(firstReportValue)
         .filter(res => res !== 'name')
