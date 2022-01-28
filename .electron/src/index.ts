@@ -1,7 +1,7 @@
 import child_process from 'child_process'
-import { app, BrowserWindow, ipcRenderer } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import path from 'path'
-import { createTimeEvent, timeAggregator, TimeEvent } from './timeAggregator'
+import { createTimeEvent, Interval, timeAggregator, TimeEvent } from './timeAggregator'
 
 const createWindow = () => {
   const win = new BrowserWindow({
@@ -14,7 +14,9 @@ const createWindow = () => {
     }
   })
 
-  win.webContents.toggleDevTools()
+  if (process.env.NODE_ENV !== 'production') {
+    win.webContents.toggleDevTools()
+  }
 
   win.loadFile(path.join(__dirname, '../../dist/index.html'))
 
@@ -85,11 +87,6 @@ app.whenReady().then(async () => {
         }))
       }
     } else if (channel == 'generate-report') {
-      interface Interval {
-        from: Date
-        to: Date
-      }
-
       const isInterval = (arg: any): arg is Interval => {
         return arg && arg.from && arg.to
       }

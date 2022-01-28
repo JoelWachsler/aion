@@ -6,7 +6,7 @@
       <v-btn @click="clicky">Generate report</v-btn>
     </v-row>
     <v-row>
-      {{ report }}
+      <report />
     </v-row>
     <v-row>
       <v-text-field
@@ -27,10 +27,15 @@ import {
   ref,
 } from '@nuxtjs/composition-api'
 import { ipcRenderer } from 'electron'
+import { TimeAggregatorResult } from '~/.electron/src/timeAggregator'
+import Report from '~/components/Report.vue'
 
-type WindowWithIpc = typeof window & { ipcRenderer?: typeof ipcRenderer };
+type WindowWithIpc = typeof window & { ipcRenderer?: typeof ipcRenderer }
 
 export default defineComponent({
+  components: {
+    Report,
+  },
   setup() {
     const locked = ref(false)
     const initDate = ref(new Date())
@@ -42,7 +47,7 @@ export default defineComponent({
       return new Date(seconds * 1000).toISOString().substr(11, 8)
     })
 
-    const report = ref<{ date: Date; name: string; seconds: number }[]>([])
+    const report = ref<TimeAggregatorResult[]>([])
     const eventName = ref('')
 
     onMounted(() => {

@@ -7,14 +7,17 @@ export interface TimeEvent {
   track: boolean
 }
 
-export interface TimeAggregatorArgs {
+interface TimeAggregatorArgs extends Interval {
   events: TimeEvent[]
+}
+
+export interface Interval {
   from: Date
   to: Date
 }
 
 export interface TimeAggregatorResult {
-  date: Date
+  date: number
   name: string
   seconds: number
 }
@@ -70,7 +73,7 @@ export const timeAggregator = ({ events, from, to }: TimeAggregatorArgs): TimeAg
       let eventForDayAndName = resultForDay.get(event.name)
       if (!eventForDayAndName) {
         eventForDayAndName = {
-          date: currentDay,
+          date: currentDay.getTime(),
           name: event.name,
           seconds: 0,
         }
