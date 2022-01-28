@@ -1,6 +1,7 @@
 import child_process from 'child_process'
 import { app, BrowserWindow } from 'electron'
 import path from 'path'
+import { initDb } from './db'
 import { createTimeEvent, Interval, timeAggregator, TimeEvent } from './timeAggregator'
 
 const createWindow = () => {
@@ -49,41 +50,77 @@ const lockedMonitor = ({ locked, unlocked }: LockedMonitorArgs) => {
 app.whenReady().then(async () => {
   const win = createWindow()
 
-  const events: TimeEvent[] = []
-  const trackingNames = new Set<string>()
-  let currentEvent: TimeEvent
+  const db = initDb()
+  await db.read()
 
-  const addEvent = (newEvent: TimeEvent) => {
+  if (!db.data) {
+    db.data = {
+      meta: {
+        version: 1,
+      },
+      events: [],
+      trackingNames: [],
+      currentEvent: undefined
+    }
+
+    await db.write()
+  }
+
+  const events: TimeEvent[] = db.data?.events ?? []
+  const trackingNames = new Set<string>(db.data.trackingNames ?? [])
+  let currentEvent: TimeEvent | undefined
+
+  if (db.data?.currentEvent) {
+    currentEvent = db.data.currentEvent
+  }
+
+  const addEvent = async (newEvent: TimeEvent) => {
+    if (currentEvent && newEvent.name === currentEvent.name && newEvent.track === currentEvent.track) {
+      // unnecessary update -> ignore it
+      return
+    }
+
     events.push(newEvent)
     currentEvent = newEvent
 
     trackingNames.add(newEvent.name)
     sendUpdatedTrackingNames()
+
+    db.data!.events = events
+    db.data!.trackingNames = [...trackingNames]
+    db.data!.currentEvent = currentEvent
+    await db.write()
+  }
+
+  if (!currentEvent) {
+    addEvent(createTimeEvent({
+      name: 'First',
+      track: true,
+    }))
   }
 
   const sendUpdatedTrackingNames = () => {
     win.webContents.send('tracking-names-updated', [...trackingNames])
   }
 
-  addEvent(createTimeEvent({
-    name: 'First',
-    track: true,
-  }))
-
   lockedMonitor({
     locked: () => {
       // win.webContents.send('locked-state', true)
-      addEvent(createTimeEvent({
-        name: currentEvent.name,
-        track: false,
-      }))
+      if (currentEvent) {
+        addEvent(createTimeEvent({
+          name: currentEvent.name,
+          track: false,
+        }))
+      }
     },
     unlocked: () => {
       // win.webContents.send('locked-state', false)
-      addEvent(createTimeEvent({
-        name: currentEvent.name,
-        track: true,
-      }))
+      if (currentEvent) {
+        addEvent(createTimeEvent({
+          name: currentEvent.name,
+          track: true,
+        }))
+      }
     },
   })
 

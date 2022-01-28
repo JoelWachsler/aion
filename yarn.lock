@@ -7256,6 +7256,12 @@ loose-envify@^1.0.0:
   dependencies:
     js-tokens "^3.0.0 || ^4.0.0"
 
+"lowdb@github:dankreiger/lowdb#chore/esm-cjs-hybrid-WITH-LIB":
+  version "2.1.0"
+  resolved "https://codeload.github.com/dankreiger/lowdb/tar.gz/55501007f52ca06ef682aa34f4809d320f1a4e48"
+  dependencies:
+    steno "^1.0.0"
+
 lower-case@^1.1.1:
   version "1.1.4"
   resolved "https://registry.yarnpkg.com/lower-case/-/lower-case-1.1.4.tgz#9a2cabd1b9e8e0ae993a4bf7d5875c39c42e8eac"
@@ -10075,6 +10081,11 @@ std-env@^2.2.1, std-env@^2.3.0:
   integrity sha512-eOsoKTWnr6C8aWrqJJ2KAReXoa7Vn5Ywyw6uCXgA/xDhxPoaIsBa5aNJmISY04dLwXPBnDHW4diGM7Sn5K4R/g==
   dependencies:
     ci-info "^3.1.1"
+
+steno@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/steno/-/steno-1.0.0.tgz#475e32c6066ec9760229eaaf1550601764fbecba"
+  integrity sha512-C/KgCvEa1yWnpHmaPjAXrz1yWxh6hs+HvhqqPa71euaQmNi1wr4+WFo57VQxjKKuFl2KqS7gtlrN0oxj2noQLw==
 
 stream-browserify@^2.0.1:
   version "2.0.2"
