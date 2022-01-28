@@ -1,16 +1,12 @@
 <template>
   <v-container>
     <v-row>
-      <v-btn @click="generateReport">Generate report</v-btn>
-    </v-row>
-
-    <v-row>
       <v-data-table :headers="headers" :items="report" />
     </v-row>
   </v-container>
 </template>
 <script lang="ts">
-import { computed, defineComponent, ref } from '@nuxtjs/composition-api'
+import { computed, defineComponent, onBeforeUnmount, onMounted, ref } from '@nuxtjs/composition-api'
 import { TimeAggregatorResult } from '.electron/src/timeAggregator'
 import { useDate } from '~/composition/useDate'
 import { useReport } from '~/composition/useReport'
@@ -34,10 +30,24 @@ export default defineComponent({
       }
     })
 
+    const generateReport = () => {
+      win.ipcRenderer?.send('generate-report', currentWeek.value)
+    }
+
+    let reportRefresher: ReturnType<typeof setInterval> | null
+    onMounted(() => {
+      generateReport()
+      reportRefresher = setInterval(generateReport, 10000)
+    })
+
+    onBeforeUnmount(() => {
+      if (reportRefresher) {
+        clearInterval(reportRefresher)
+        reportRefresher = null
+      }
+    })
+
     return {
-      generateReport() {
-        win.ipcRenderer?.send('generate-report', currentWeek.value)
-      },
       ...useReport({
         result,
         interval: currentWeek,

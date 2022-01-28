@@ -3,9 +3,6 @@
     <v-row>Current state: {{ locked }}</v-row>
     <v-row>Counter: {{ workCounter }}</v-row>
     <v-row>
-      <report />
-    </v-row>
-    <v-row>
       <v-text-field
         v-model="eventName"
         placeholder="change event name"
@@ -23,13 +20,9 @@ import {
   onMounted,
   ref,
 } from '@nuxtjs/composition-api'
-import Report from '~/components/Report.vue'
 import { win } from '~/composition/useWindow'
 
 export default defineComponent({
-  components: {
-    Report,
-  },
   setup() {
     const locked = ref(false)
     const initDate = ref(new Date())
