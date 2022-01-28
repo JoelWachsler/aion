@@ -1,17 +1,17 @@
-import { TimeEvent, timeAggregator } from './timeAggregator'
+import { createTimeEvent, timeAggregator, TimeEvent } from './timeAggregator'
 
 it('should aggregate a single timestamp event for a single day', () => {
   const events: TimeEvent[] = [
-    {
+    createTimeEvent({
       name: 'First',
       timestamp: new Date(2000, 0, 1, 0, 0, 0),
       track: true,
-    },
-    {
+    }),
+    createTimeEvent({
       name: 'Current',
       timestamp: new Date(2000, 0, 1, 1, 0, 0),
       track: false,
-    },
+    }),
   ]
 
   const result = timeAggregator({
@@ -30,21 +30,21 @@ it('should aggregate a single timestamp event for a single day', () => {
 
 it('should aggregate two timestamp events for a single day', () => {
   const events: TimeEvent[] = [
-    {
+    createTimeEvent({
       name: 'First',
       timestamp: new Date(2000, 0, 1, 0, 0, 0),
       track: true,
-    },
-    {
+    }),
+    createTimeEvent({
       name: 'Second',
       timestamp: new Date(2000, 0, 1, 1, 0, 0),
       track: true,
-    },
-    {
+    }),
+    createTimeEvent({
       name: 'Current',
       timestamp: new Date(2000, 0, 1, 2, 0, 0),
       track: false,
-    },
+    }),
   ]
 
   const result = timeAggregator({
@@ -68,16 +68,16 @@ it('should aggregate two timestamp events for a single day', () => {
 
 it('should split if spanning over a multiple days', () => {
   const events: TimeEvent[] = [
-    {
+    createTimeEvent({
       name: 'First',
       timestamp: new Date(2000, 0, 1, 0, 0, 0),
       track: true,
-    },
-    {
+    }),
+    createTimeEvent({
       name: 'Current',
       timestamp: new Date(2000, 0, 3, 0, 0, 0),
       track: false,
-    },
+    }),
   ]
 
   const result = timeAggregator({
@@ -101,21 +101,21 @@ it('should split if spanning over a multiple days', () => {
 
 it('should skip events where tracking is false', () => {
   const events: TimeEvent[] = [
-    {
+    createTimeEvent({
       name: 'First',
       timestamp: new Date(2000, 0, 1, 0, 0, 0),
       track: true,
-    },
-    {
+    }),
+    createTimeEvent({
       name: 'First',
       timestamp: new Date(2000, 0, 1, 1, 0, 0),
       track: false,
-    },
-    {
+    }),
+    createTimeEvent({
       name: 'Current',
       timestamp: new Date(2000, 0, 1, 2, 0, 0),
       track: false,
-    },
+    }),
   ]
 
   const result = timeAggregator({
@@ -134,16 +134,16 @@ it('should skip events where tracking is false', () => {
 
 it('should clip events if outside tracking dates', () => {
   const events: TimeEvent[] = [
-    {
+    createTimeEvent({
       name: 'First',
       timestamp: new Date(2000, 0, 1, 0, 0, 0),
       track: true,
-    },
-    {
+    }),
+    createTimeEvent({
       name: 'Current',
       timestamp: new Date(2000, 0, 1, 2, 0, 0),
       track: false,
-    },
+    }),
   ]
 
   const result = timeAggregator({

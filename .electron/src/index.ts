@@ -1,7 +1,7 @@
 import child_process from 'child_process'
 import { app, BrowserWindow, ipcRenderer } from 'electron'
 import path from 'path'
-import { timeAggregator, TimeEvent } from './timeAggregator'
+import { createTimeEvent, timeAggregator, TimeEvent } from './timeAggregator'
 
 const createWindow = () => {
   const win = new BrowserWindow({
@@ -44,57 +44,45 @@ const lockedMonitor = ({ locked, unlocked }: LockedMonitorArgs) => {
   })
 }
 
-class Snapshot {
-  constructor(private prevSnapshot: Snapshot | undefined, private date: Date, private snapshotName: string) {}
-
-  toString() {
-    return `from: ${this.prevSnapshot?.date}, to: ${this.date}, name: ${this.snapshotName}`
-  }
-}
-
 app.whenReady().then(async () => {
   const win = createWindow()
 
   const events: TimeEvent[] = []
   let currentEvent: TimeEvent
-  const addEvent = (newEvent: Omit<TimeEvent, 'timestamp'> & { timestamp?: Date }) => {
-    const ev: TimeEvent = {
-      timestamp: new Date(),
-      ...newEvent,
-    }
-    events.push(ev)
-    currentEvent = ev
+  const addEvent = (newEvent: TimeEvent) => {
+    events.push(newEvent)
+    currentEvent = newEvent
   }
 
-  addEvent({
+  addEvent(createTimeEvent({
     name: 'First',
     track: true,
-  })
+  }))
 
   lockedMonitor({
     locked: () => {
       // win.webContents.send('locked-state', true)
-      addEvent({
+      addEvent(createTimeEvent({
         name: currentEvent.name,
         track: false,
-      })
+      }))
     },
     unlocked: () => {
       // win.webContents.send('locked-state', false)
-      addEvent({
+      addEvent(createTimeEvent({
         name: currentEvent.name,
         track: true,
-      })
+      }))
     },
   })
 
   win.webContents.on('ipc-message', (_, channel, arg) => {
     if (channel === 'new-event') {
       if (typeof arg === 'string') {
-        addEvent({
+        addEvent(createTimeEvent({
           name: arg,
           track: true,
-        })
+        }))
       }
     } else if (channel == 'generate-report') {
       interface Interval {
@@ -108,7 +96,7 @@ app.whenReady().then(async () => {
 
       if (isInterval(arg)) {
         const msg = timeAggregator({
-          events: [...events, { name: 'Current', track: false, timestamp: new Date() }],
+          events: [...events, createTimeEvent({ name: 'Current', track: false })],
           from: arg.from,
           to: arg.to,
         })

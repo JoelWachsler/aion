@@ -1,5 +1,7 @@
+import { v4 as uuidv4 } from 'uuid'
 
 export interface TimeEvent {
+  id: string
   timestamp: Date
   name: string
   track: boolean
@@ -15,6 +17,14 @@ export interface TimeAggregatorResult {
   date: Date
   name: string
   seconds: number
+}
+
+export const createTimeEvent = (args: Omit<TimeEvent, 'id' | 'timestamp'> & { id?: TimeEvent['id'], timestamp?: TimeEvent['timestamp'] }): TimeEvent => {
+  return {
+    id: uuidv4(),
+    timestamp: new Date(),
+    ...args,
+  }
 }
 
 const incrementDateBySeconds = (date: Date, seconds: number) => {
