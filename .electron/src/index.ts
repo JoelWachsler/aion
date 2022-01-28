@@ -50,10 +50,19 @@ app.whenReady().then(async () => {
   const win = createWindow()
 
   const events: TimeEvent[] = []
+  const trackingNames = new Set<string>()
   let currentEvent: TimeEvent
+
   const addEvent = (newEvent: TimeEvent) => {
     events.push(newEvent)
     currentEvent = newEvent
+
+    trackingNames.add(newEvent.name)
+    sendUpdatedTrackingNames()
+  }
+
+  const sendUpdatedTrackingNames = () => {
+    win.webContents.send('tracking-names-updated', [...trackingNames])
   }
 
   addEvent(createTimeEvent({
@@ -86,7 +95,7 @@ app.whenReady().then(async () => {
           track: true,
         }))
       }
-    } else if (channel == 'generate-report') {
+    } else if (channel === 'generate-report') {
       const isInterval = (arg: any): arg is Interval => {
         return arg && arg.from && arg.to
       }
@@ -100,6 +109,10 @@ app.whenReady().then(async () => {
 
         win.webContents.send('new-report', msg)
       }
+    } else if (channel === 'get-current-event') {
+      win.webContents.send('current-event', currentEvent)
+    } else if (channel === 'get-tracking-names') {
+      sendUpdatedTrackingNames()
     }
   })
 

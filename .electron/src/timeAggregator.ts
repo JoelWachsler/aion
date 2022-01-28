@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 export interface TimeEvent {
   id: string
-  timestamp: Date
+  timestamp: number
   name: string
   track: boolean
 }
@@ -25,7 +25,7 @@ export interface TimeAggregatorResult {
 export const createTimeEvent = (args: Omit<TimeEvent, 'id' | 'timestamp'> & { id?: TimeEvent['id'], timestamp?: TimeEvent['timestamp'] }): TimeEvent => {
   return {
     id: uuidv4(),
-    timestamp: new Date(),
+    timestamp: new Date().getTime(),
     ...args,
   }
 }
@@ -35,7 +35,7 @@ const incrementDateBySeconds = (date: Date, seconds: number) => {
 }
 
 const findEventByDate = (events: TimeEvent[], date: Date): TimeEvent | undefined => {
-  return events.find(event => event.timestamp.getTime() <= date.getTime())
+  return events.find(event => event.timestamp <= date.getTime())
 }
 
 const toDay = (date: Date) => {
@@ -44,7 +44,7 @@ const toDay = (date: Date) => {
 
 export const timeAggregator = ({ events, from, to }: TimeAggregatorArgs): TimeAggregatorResult[] => {
   let currentTime = new Date(from)
-  const sortedEvents = events.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
+  const sortedEvents = events.sort((a, b) => a.timestamp - b.timestamp)
   const reverseEvents = sortedEvents.reverse()
 
   const lastEvent = reverseEvents[0]
@@ -52,7 +52,7 @@ export const timeAggregator = ({ events, from, to }: TimeAggregatorArgs): TimeAg
     throw Error('No events defined!')
   }
 
-  let lastEventTime = lastEvent.timestamp.getTime()
+  let lastEventTime = lastEvent.timestamp
   if (lastEventTime > to.getTime()) {
     lastEventTime = to.getTime()
   }

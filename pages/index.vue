@@ -3,9 +3,11 @@
     <v-row>Current state: {{ locked }}</v-row>
     <v-row>Counter: {{ workCounter }}</v-row>
     <v-row>
-      <v-text-field
+      <v-combobox
         v-model="eventName"
-        placeholder="change event name"
+        solo
+        placeholder="Change tracking"
+        :items="eventNames"
         @blur="updateEventName"
         @keyup.native.enter="updateEventName"
       />
@@ -20,6 +22,7 @@ import {
   onMounted,
   ref,
 } from '@nuxtjs/composition-api'
+import { TimeEvent } from '~/.electron/src/timeAggregator'
 import { win } from '~/composition/useWindow'
 
 export default defineComponent({
@@ -35,11 +38,23 @@ export default defineComponent({
     })
 
     const eventName = ref('')
+    const eventNames = ref<string[]>([])
 
     onMounted(() => {
       setInterval(() => {
         currentDate.value = new Date()
       }, 1000)
+
+      win.ipcRenderer?.send('get-current-event', null)
+      win.ipcRenderer?.send('get-tracking-names', null)
+    })
+
+    win.ipcRenderer?.on('tracking-names-updated', (_, trackingNames: string[]) => {
+      eventNames.value = trackingNames
+    })
+
+    win.ipcRenderer?.on('current-event', (_, message: TimeEvent) => {
+      eventName.value = message.name
     })
 
     win.ipcRenderer?.on('locked-state', (_, message) => {
@@ -48,6 +63,7 @@ export default defineComponent({
 
     return {
       eventName,
+      eventNames,
       locked,
       workCounter,
       updateEventName() {
