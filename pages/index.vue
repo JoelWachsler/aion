@@ -1,19 +1,34 @@
 <template>
   <v-container>
+    <v-row>Current state: {{ locked }}</v-row>
+    <v-row>Counter: {{ workCounter }}</v-row>
     <v-row>
-      Current state: {{ locked }}
+      <v-btn @click="clicky">Generate report</v-btn>
     </v-row>
     <v-row>
-      Counter: {{ workCounter }}
+      {{ report }}
+    </v-row>
+    <v-row>
+      <v-text-field
+        v-model="eventName"
+        placeholder="change event name"
+        @blur="updateEventName"
+        @keyup.native.enter="updateEventName"
+      />
     </v-row>
   </v-container>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, ref } from '@nuxtjs/composition-api'
+import {
+  computed,
+  defineComponent,
+  onMounted,
+  ref,
+} from '@nuxtjs/composition-api'
 import { ipcRenderer } from 'electron'
 
-type WindowWithIpc = typeof window & { ipcRenderer?: typeof ipcRenderer }
+type WindowWithIpc = typeof window & { ipcRenderer?: typeof ipcRenderer };
 
 export default defineComponent({
   setup() {
@@ -21,9 +36,14 @@ export default defineComponent({
     const initDate = ref(new Date())
     const currentDate = ref(new Date())
     const workCounter = computed(() => {
-      const seconds = Math.round((currentDate.value.getTime() - initDate.value.getTime()) / 1000)
+      const seconds = Math.round(
+        (currentDate.value.getTime() - initDate.value.getTime()) / 1000,
+      )
       return new Date(seconds * 1000).toISOString().substr(11, 8)
     })
+
+    const report = ref<{ date: Date; name: string; seconds: number }[]>([])
+    const eventName = ref('')
 
     onMounted(() => {
       setInterval(() => {
@@ -36,9 +56,31 @@ export default defineComponent({
       locked.value = Boolean(message)
     })
 
+    win.ipcRenderer?.on('new-report', (_, message) => {
+      report.value = message
+    })
+
     return {
+      eventName,
+      report,
       locked,
       workCounter,
+      updateEventName() {
+        win.ipcRenderer?.send('new-event', eventName.value)
+      },
+      clicky() {
+        const now = new Date()
+        const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+        const firstOfNextMonth = new Date(
+          firstOfMonth.getFullYear(),
+          firstOfMonth.getMonth() + 1,
+          1,
+        )
+        win.ipcRenderer?.send('generate-report', {
+          from: firstOfMonth,
+          to: firstOfNextMonth,
+        })
+      },
     }
   },
 })

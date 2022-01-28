@@ -1,6 +1,7 @@
 import child_process from 'child_process'
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcRenderer } from 'electron'
 import path from 'path'
+import { timeAggregator, TimeEvent } from './timeAggregator'
 
 const createWindow = () => {
   const win = new BrowserWindow({
@@ -51,53 +52,71 @@ class Snapshot {
   }
 }
 
-class SnapshotManager {
-
-  private snapshots: Snapshot[] = []
-  private lastSnapshot: Snapshot | undefined = undefined
-
-  createSnapshot(name: string) {
-    if (this.lastSnapshot) {
-      this.snapshots.push(this.lastSnapshot)
-    }
-
-    this.lastSnapshot = new Snapshot(this.lastSnapshot, new Date(), name)
-  }
-
-  printSnapshots() {
-    this.snapshots.forEach(snapshot => {
-      console.log(snapshot.toString())
-    })
-  }
-}
-
 app.whenReady().then(async () => {
   const win = createWindow()
 
-  const manager = new SnapshotManager()
-  manager.createSnapshot('init')
+  const events: TimeEvent[] = []
+  let currentEvent: TimeEvent
+  const addEvent = (newEvent: Omit<TimeEvent, 'timestamp'> & { timestamp?: Date }) => {
+    const ev: TimeEvent = {
+      timestamp: new Date(),
+      ...newEvent,
+    }
+    events.push(ev)
+    currentEvent = ev
+  }
+
+  addEvent({
+    name: 'First',
+    track: true,
+  })
 
   lockedMonitor({
     locked: () => {
-      // manager.createSnapshot('locked')
-      console.log('sending locked message')
-      win.webContents.send('locked-state', true)
+      // win.webContents.send('locked-state', true)
+      addEvent({
+        name: currentEvent.name,
+        track: false,
+      })
     },
     unlocked: () => {
-      console.log('sending unlocked message')
-      win.webContents.send('locked-state', false)
-      // manager.createSnapshot('unlocked')
-      // manager.printSnapshots()
+      // win.webContents.send('locked-state', false)
+      addEvent({
+        name: currentEvent.name,
+        track: true,
+      })
     },
   })
 
-  // const { stdout } = child_process.spawn('gdbus monitor -y -d org.freedesktop.login1')
-  // stdout.on('data', (data) => {
-  //   console.log(`New data: ${data}`)
-  // })
+  win.webContents.on('ipc-message', (_, channel, arg) => {
+    if (channel === 'new-event') {
+      if (typeof arg === 'string') {
+        addEvent({
+          name: arg,
+          track: true,
+        })
+      }
+    } else if (channel == 'generate-report') {
+      interface Interval {
+        from: Date
+        to: Date
+      }
 
-  // const rs = await exec('gdbus monitor -y -d org.freedesktop.login1')
-  // console.log(`Result: ${rs}`)
+      const isInterval = (arg: any): arg is Interval => {
+        return arg && arg.from && arg.to
+      }
+
+      if (isInterval(arg)) {
+        const msg = timeAggregator({
+          events: [...events, { name: 'Current', track: false, timestamp: new Date() }],
+          from: arg.from,
+          to: arg.to,
+        })
+
+        win.webContents.send('new-report', msg)
+      }
+    }
+  })
 
   // setInterval(() => {
   //   console.log(powerMonitor.getSystemIdleState(1))
