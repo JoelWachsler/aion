@@ -12,6 +12,7 @@ import { TimeAggregatorResult } from '.electron/src/timeAggregator'
 import { useDate } from '~/composition/useDate'
 import { useReport } from '~/composition/useReport'
 import { win } from '~/composition/useWindow'
+import { Messages } from '~/.electron/src/messages'
 
 export default defineComponent({
   setup() {
@@ -19,7 +20,7 @@ export default defineComponent({
     const result = ref<TimeAggregatorResult[]>([])
 
     const newReportListener = {
-      name: 'new-report',
+      name: Messages.NewReport,
       listener: (_: IpcRendererEvent, message: TimeAggregatorResult[]) => {
         result.value = message
       },
@@ -41,7 +42,7 @@ export default defineComponent({
     })
 
     const generateReport = () => {
-      win.ipcRenderer?.send('generate-report', currentWeek.value)
+      win.ipcRenderer?.send(Messages.GenerateReport, currentWeek.value)
     }
 
     let reportRefresher: ReturnType<typeof setInterval> | null

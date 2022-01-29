@@ -1,13 +1,13 @@
 import { Low, JSONFile } from 'lowdb'
 import { TimeEvent } from './timeAggregator'
 
-interface DbV1 {
+export interface DbV1 {
   meta: {
     version: 1,
   },
   events: TimeEvent[],
   trackingNames: string[],
-  currentEvent?: TimeEvent,
+  currentEvent: TimeEvent,
 }
 
 export const initDb = () => {

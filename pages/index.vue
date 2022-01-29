@@ -26,6 +26,7 @@ import {
 import { IpcRendererEvent } from 'electron'
 import { TimeEvent } from '~/.electron/src/timeAggregator'
 import { win } from '~/composition/useWindow'
+import { Messages } from '~/.electron/src/messages'
 
 export default defineComponent({
   setup() {
@@ -47,12 +48,12 @@ export default defineComponent({
         currentDate.value = new Date()
       }, 1000)
 
-      win.ipcRenderer?.send('get-current-event', null)
-      win.ipcRenderer?.send('get-tracking-names', null)
+      win.ipcRenderer?.send(Messages.GetCurrentEvent, null)
+      win.ipcRenderer?.send(Messages.GetTrackingNames, null)
     })
 
     const trackingNameUpdatesListener = {
-      name: 'tracking-names-updated',
+      name: Messages.TrackingNamesUpdates,
       listener: (_: IpcRendererEvent, trackingNames: string[]) => {
         eventNames.value = trackingNames
       },
@@ -61,17 +62,13 @@ export default defineComponent({
     win.ipcRenderer?.on(trackingNameUpdatesListener.name, trackingNameUpdatesListener.listener)
 
     const currentEventListener = {
-      name: 'currentEvent',
+      name: Messages.CurrentEvent,
       listener: (_: IpcRendererEvent, message: TimeEvent) => {
         eventName.value = message.name
       },
     }
 
     win.ipcRenderer?.on(currentEventListener.name, currentEventListener.listener)
-
-    // win.ipcRenderer?.on('locked-state', (_, message) => {
-    //   locked.value = Boolean(message)
-    // })
 
     onBeforeUnmount(() => {
       win.ipcRenderer?.off(trackingNameUpdatesListener.name, trackingNameUpdatesListener.listener)
@@ -84,7 +81,7 @@ export default defineComponent({
       locked,
       workCounter,
       updateEventName() {
-        win.ipcRenderer?.send('new-event', eventName.value)
+        win.ipcRenderer?.send(Messages.NewEvent, eventName.value)
       },
     }
   },

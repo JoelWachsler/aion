@@ -1,7 +1,8 @@
 import child_process from 'child_process'
 import { app, BrowserWindow } from 'electron'
 import path from 'path'
-import { initDb } from './db'
+import { DbV1, initDb } from './db'
+import { Messages } from './messages'
 import { createTimeEvent, Interval, timeAggregator, TimeEvent } from './timeAggregator'
 
 const createWindow = () => {
@@ -35,16 +36,36 @@ interface LockedMonitorArgs {
 const lockedMonitor = ({ locked, unlocked }: LockedMonitorArgs) => {
   const ps = child_process.exec('gdbus monitor -y -d org.freedesktop.login1')
 
-  ps.stdout?.on('data', (data: string) => {
+  ps.stdout?.on('data', async (data: string) => {
     if (data.includes(`'LockedHint': <true>`)) {
       if (locked) {
-        locked()
+        await locked()
       }
     } else if (data.includes(`'LockedHint': <false>`)) {
       if (unlocked) {
-        unlocked()
+        await unlocked()
       }
     }
+  })
+}
+
+const defaultDatabase = (): DbV1 => {
+  const initialEvent = createInitialEvent()
+
+  return {
+    meta: {
+      version: 1,
+    },
+    events: [initialEvent],
+    trackingNames: [initialEvent.name],
+    currentEvent: initialEvent,
+  }
+}
+
+const createInitialEvent = () => {
+  return createTimeEvent({
+    name: 'Initial event',
+    track: true,
   })
 }
 
@@ -54,103 +75,99 @@ app.whenReady().then(async () => {
   const db = initDb()
   await db.read()
 
-  if (!db.data) {
-    db.data = {
-      meta: {
-        version: 1,
-      },
-      events: [],
-      trackingNames: [],
-      currentEvent: undefined
+  const getOrCreateDbData = async (): Promise<DbV1> => {
+    if (!db.data) {
+      db.data = defaultDatabase()
+      await db.write()
     }
 
-    await db.write()
-  }
-
-  const events: TimeEvent[] = db.data?.events ?? []
-  const trackingNames = new Set<string>(db.data.trackingNames ?? [])
-  let currentEvent: TimeEvent | undefined
-
-  if (db.data?.currentEvent) {
-    currentEvent = db.data.currentEvent
+    return db.data
   }
 
   const addEvent = async (newEvent: TimeEvent) => {
+    if (newEvent.name === '') {
+      return
+    }
+
+    const data = await getOrCreateDbData()
+    const { currentEvent, events, trackingNames } = data
+
     if (currentEvent && newEvent.name === currentEvent.name && newEvent.track === currentEvent.track) {
       // unnecessary update -> ignore it
       return
     }
 
     events.push(newEvent)
-    currentEvent = newEvent
+    data.currentEvent = newEvent
 
-    trackingNames.add(newEvent.name)
-    sendUpdatedTrackingNames()
+    trackingNames.push(newEvent.name)
 
-    db.data!.events = events
-    db.data!.trackingNames = [...trackingNames]
-    db.data!.currentEvent = currentEvent
+    data.trackingNames = [...new Set(trackingNames).add(newEvent.name)]
+    data.events = events
+    data.currentEvent = newEvent
     await db.write()
+
+    sendUpdatedTrackingNames()
   }
 
   const sendUpdatedTrackingNames = () => {
-    win.webContents.send('tracking-names-updated', [...trackingNames])
-  }
-
-  if (!currentEvent) {
-    addEvent(createTimeEvent({
-      name: 'First',
-      track: true,
-    }))
+    win.webContents.send(Messages.TrackingNamesUpdates, [...(db.data?.trackingNames ?? [])])
   }
 
   lockedMonitor({
-    locked: () => {
-      // win.webContents.send('locked-state', true)
-      if (currentEvent) {
-        addEvent(createTimeEvent({
-          name: currentEvent.name,
-          track: false,
-        }))
-      }
+    locked: async () => {
+      const { currentEvent } = await getOrCreateDbData()
+
+      addEvent(createTimeEvent({
+        name: currentEvent.name,
+        track: false,
+      }))
     },
-    unlocked: () => {
-      // win.webContents.send('locked-state', false)
-      if (currentEvent) {
-        addEvent(createTimeEvent({
-          name: currentEvent.name,
-          track: true,
-        }))
-      }
+    unlocked: async () => {
+      const { currentEvent } = await getOrCreateDbData()
+
+      addEvent(createTimeEvent({
+        name: currentEvent.name,
+        track: true,
+      }))
     },
   })
 
-  win.webContents.on('ipc-message', (_, channel, arg) => {
-    if (channel === 'new-event') {
+  win.webContents.on('ipc-message', async (_, channel, arg) => {
+    if (channel === Messages.NewEvent) {
       if (typeof arg === 'string') {
         addEvent(createTimeEvent({
           name: arg,
           track: true,
         }))
       }
-    } else if (channel === 'generate-report') {
+    } else if (channel === Messages.GenerateReport) {
       const isInterval = (arg: any): arg is Interval => {
         return arg && arg.from && arg.to
       }
 
       if (isInterval(arg)) {
+        const { events } = await getOrCreateDbData()
+
         const msg = timeAggregator({
           events: [...events, createTimeEvent({ name: 'Current', track: false })],
           from: arg.from,
           to: arg.to,
         })
 
-        win.webContents.send('new-report', msg)
+        win.webContents.send(Messages.NewReport, msg)
       }
-    } else if (channel === 'get-current-event') {
-      win.webContents.send('current-event', currentEvent)
-    } else if (channel === 'get-tracking-names') {
+    } else if (channel === Messages.GetCurrentEvent) {
+      const { currentEvent } = await getOrCreateDbData()
+      console.log(`Sending current event: ${JSON.stringify(currentEvent)}`)
+      win.webContents.send(Messages.CurrentEvent, currentEvent)
+    } else if (channel === Messages.GetTrackingNames) {
+      console.log('Sending track name update')
       sendUpdatedTrackingNames()
+    } else if (channel === Messages.ClearDatabase) {
+      console.log('Clearing database')
+      db.data = defaultDatabase()
+      await db.write()
     }
   })
 
@@ -161,6 +178,5 @@ app.whenReady().then(async () => {
 })
 
 app.on('window-all-closed', () => {
-  console.log('all windows closed')
   if (process.platform !== 'darwin') app.quit()
 })
