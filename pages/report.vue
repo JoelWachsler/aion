@@ -6,7 +6,8 @@
   </v-container>
 </template>
 <script lang="ts">
-import { computed, defineComponent, onBeforeUnmount, onMounted, ref } from '@nuxtjs/composition-api'
+import { computed, defineComponent, onBeforeUnmount, onMounted, onUnmounted, ref } from '@nuxtjs/composition-api'
+import { IpcRendererEvent } from 'electron'
 import { TimeAggregatorResult } from '.electron/src/timeAggregator'
 import { useDate } from '~/composition/useDate'
 import { useReport } from '~/composition/useReport'
@@ -17,8 +18,17 @@ export default defineComponent({
     const date = useDate(ref(new Date().getTime()))
     const result = ref<TimeAggregatorResult[]>([])
 
-    win.ipcRenderer?.on('new-report', (_, message) => {
-      result.value = message
+    const newReportListener = {
+      name: 'new-report',
+      listener: (_: IpcRendererEvent, message: TimeAggregatorResult[]) => {
+        result.value = message
+      },
+    }
+
+    win.ipcRenderer?.on(newReportListener.name, newReportListener.listener)
+
+    onUnmounted(() => {
+      win.ipcRenderer?.off(newReportListener.name, newReportListener.listener)
     })
 
     const currentWeek = computed(() => {

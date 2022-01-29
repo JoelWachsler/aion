@@ -15,11 +15,12 @@ const createWindow = () => {
     }
   })
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (app.isPackaged) {
+    win.loadFile(path.join(__dirname, '../../../../dist/index.html'))
+  } else {
+    win.loadFile(path.join(__dirname, '../../dist/index.html'))
     win.webContents.toggleDevTools()
   }
-
-  win.loadFile(path.join(__dirname, '../../dist/index.html'))
 
   return win
 }
@@ -92,15 +93,15 @@ app.whenReady().then(async () => {
     await db.write()
   }
 
+  const sendUpdatedTrackingNames = () => {
+    win.webContents.send('tracking-names-updated', [...trackingNames])
+  }
+
   if (!currentEvent) {
     addEvent(createTimeEvent({
       name: 'First',
       track: true,
     }))
-  }
-
-  const sendUpdatedTrackingNames = () => {
-    win.webContents.send('tracking-names-updated', [...trackingNames])
   }
 
   lockedMonitor({

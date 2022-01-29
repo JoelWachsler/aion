@@ -19,9 +19,11 @@
 import {
   computed,
   defineComponent,
+  onBeforeUnmount,
   onMounted,
   ref,
 } from '@nuxtjs/composition-api'
+import { IpcRendererEvent } from 'electron'
 import { TimeEvent } from '~/.electron/src/timeAggregator'
 import { win } from '~/composition/useWindow'
 
@@ -49,16 +51,31 @@ export default defineComponent({
       win.ipcRenderer?.send('get-tracking-names', null)
     })
 
-    win.ipcRenderer?.on('tracking-names-updated', (_, trackingNames: string[]) => {
-      eventNames.value = trackingNames
-    })
+    const trackingNameUpdatesListener = {
+      name: 'tracking-names-updated',
+      listener: (_: IpcRendererEvent, trackingNames: string[]) => {
+        eventNames.value = trackingNames
+      },
+    }
 
-    win.ipcRenderer?.on('current-event', (_, message: TimeEvent) => {
-      eventName.value = message.name
-    })
+    win.ipcRenderer?.on(trackingNameUpdatesListener.name, trackingNameUpdatesListener.listener)
 
-    win.ipcRenderer?.on('locked-state', (_, message) => {
-      locked.value = Boolean(message)
+    const currentEventListener = {
+      name: 'currentEvent',
+      listener: (_: IpcRendererEvent, message: TimeEvent) => {
+        eventName.value = message.name
+      },
+    }
+
+    win.ipcRenderer?.on(currentEventListener.name, currentEventListener.listener)
+
+    // win.ipcRenderer?.on('locked-state', (_, message) => {
+    //   locked.value = Boolean(message)
+    // })
+
+    onBeforeUnmount(() => {
+      win.ipcRenderer?.off(trackingNameUpdatesListener.name, trackingNameUpdatesListener.listener)
+      win.ipcRenderer?.off(currentEventListener.name, currentEventListener.listener)
     })
 
     return {

@@ -3,17 +3,13 @@
     "target": "ES2020",
     "module": "CommonJS",
     "moduleResolution": "Node",
-    "lib": [
-      "ESNext",
-      "ESNext.AsyncIterable",
-      "DOM",
-    ],
     "esModuleInterop": true,
     "allowJs": true,
     "sourceMap": true,
     "strict": true,
-    "noEmit": true,
+    "noEmit": false,
     "experimentalDecorators": true,
+    "outDir": "./dist",
     "baseUrl": ".",
     "paths": {
       "~/*": [
@@ -24,15 +20,13 @@
       ],
     },
     "types": [
-      "@nuxt/types",
       "@types/node",
-      "vuetify",
       "@types/jest",
     ]
   },
   "exclude": [
     "node_modules",
-    ".nuxt",
     "dist",
+    "out",
   ],
 }
