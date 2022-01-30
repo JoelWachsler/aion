@@ -19,7 +19,7 @@ import {
   computed,
   defineComponent,
   onMounted,
-  ref
+  ref,
 } from '@nuxtjs/composition-api'
 import { sendMessage } from '~/composition/useMessage'
 import { useMessageListener } from '~/composition/useMessageListener'
