@@ -21,6 +21,7 @@ import {
   onMounted,
   ref,
 } from '@nuxtjs/composition-api'
+import { getTrailingCommentRanges } from 'typescript'
 import { sendMessage } from '~/composition/useMessage'
 import { useMessageListener } from '~/composition/useMessageListener'
 import { Messages } from '~/electron/src/messages'
@@ -69,8 +70,11 @@ export default defineComponent({
       eventNames,
       locked,
       workCounter,
-      updateEventName() {
-        sendMessage(Messages.NewEvent, eventName.value)
+      updateEventName(e: Event) {
+        const target = e.target
+        if (target instanceof HTMLInputElement) {
+          sendMessage(Messages.NewEvent, target.value)
+        }
       },
     }
   },
