@@ -75,11 +75,12 @@ export default defineComponent({
         const msg: UpdateEventArgs = {
           eventId: eventToHandle.value?.id ?? '-1',
           fieldsToUpdate: {
-            track: false,
+            track: true,
           },
         }
         sendMessage(Messages.UpdateEvent, msg)
         eventToHandle.value = undefined
+        sendMessage(Messages.GetSecondsTrackedForDay, new Date().getTime())
       },
       doNotTrack() {
         const lastEvent = eventToHandle.value
@@ -87,7 +88,7 @@ export default defineComponent({
           const msg: UpdateEventArgs = {
             eventId: lastEvent.id,
             fieldsToUpdate: {
-              track: true,
+              track: false,
             },
           }
           sendMessage(Messages.UpdateEvent, msg)
@@ -95,6 +96,7 @@ export default defineComponent({
 
           // track the current event
           sendMessage(Messages.NewEvent, lastEvent.name)
+          sendMessage(Messages.GetSecondsTrackedForDay, new Date().getTime())
         }
       },
       awayCounter,

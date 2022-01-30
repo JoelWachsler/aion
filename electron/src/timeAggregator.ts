@@ -45,6 +45,21 @@ const toDay = (date: Date) => {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate())
 }
 
+interface SecondsTrackedForDayArgs {
+  events: TimeEvent[]
+  day: number
+}
+
+export const calculateSecondsTrackedForDay = ({ events, day }: SecondsTrackedForDayArgs) => {
+  const dayAsDate = new Date(day)
+  const firstTimestampToday = toDay(dayAsDate).getTime()
+  const firstTimestampTomorrow = new Date(firstTimestampToday + 24 * 3600 * 1000).getTime()
+
+  return timeAggregator({ events, from: firstTimestampToday, to: firstTimestampTomorrow })
+    .map(r => r.seconds)
+    .reduce((acc, curr) => acc + curr, 0)
+}
+
 export const timeAggregator = ({ events, from, to }: TimeAggregatorArgs): TimeAggregatorResult[] => {
   let currentTime = new Date(from)
   const sortedEvents = events.sort((a, b) => a.timestamp - b.timestamp)

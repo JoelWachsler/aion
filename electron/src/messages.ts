@@ -10,4 +10,6 @@ export enum Messages {
   NewReport = 'new-report',
   ManualEventHandling = 'manual-event-handling',
   UpdateEvent = 'update-event',
+  GetSecondsTrackedForDay = 'get-seconds-tracked-for-day',
+  SecondsTrackedForDay = 'seconds-tracked-for-day',
 }

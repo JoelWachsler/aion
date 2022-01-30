@@ -1,7 +1,6 @@
 <template>
   <v-container>
-    <v-row>Current state: {{ locked }}</v-row>
-    <v-row>Counter: {{ workCounter }}</v-row>
+    <v-row>Tracked today: {{ workCounter }}</v-row>
     <v-row>
       <v-combobox
         v-model="eventName"
@@ -22,10 +21,10 @@ import {
   onMounted,
   ref,
 } from '@nuxtjs/composition-api'
-import { Messages } from '~/electron/src/messages'
-import { TimeEvent } from '~/electron/src/timeAggregator'
 import { sendMessage } from '~/composition/useMessage'
 import { useMessageListener } from '~/composition/useMessageListener'
+import { Messages } from '~/electron/src/messages'
+import { TimeEvent } from '~/electron/src/timeAggregator'
 
 export default defineComponent({
   setup() {
@@ -49,6 +48,12 @@ export default defineComponent({
 
       sendMessage(Messages.GetCurrentEvent)
       sendMessage(Messages.GetTrackingNames)
+      sendMessage(Messages.GetSecondsTrackedForDay, new Date().getTime())
+    })
+
+    useMessageListener(Messages.SecondsTrackedForDay, (_, secondsTracked: number) => {
+      // don't question this :)
+      initDate.value = new Date(currentDate.value.getTime() - secondsTracked * 1000)
     })
 
     useMessageListener(Messages.TrackingNamesUpdates, (_, trackingNames: string[]) => {

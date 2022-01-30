@@ -1,4 +1,4 @@
-import { createTimeEvent, timeAggregator, TimeEvent } from './timeAggregator'
+import { createTimeEvent, calculateSecondsTrackedForDay, timeAggregator, TimeEvent } from './timeAggregator'
 
 it('should aggregate a single timestamp event for a single day', () => {
   const events: TimeEvent[] = [
@@ -158,4 +158,31 @@ it('should clip events if outside tracking dates', () => {
       seconds: 30,
     },
   ])
+})
+
+it('should calculate seconds tracked for day', () => {
+  const events: TimeEvent[] = [
+    createTimeEvent({
+      name: 'First',
+      timestamp: new Date(2000, 0, 1, 0, 0, 0).getTime(),
+      track: true,
+    }),
+    createTimeEvent({
+      name: 'First',
+      timestamp: new Date(2000, 0, 2, 0, 0, 30).getTime(),
+      track: false,
+    }),
+    createTimeEvent({
+      name: 'Current',
+      timestamp: new Date(2000, 0, 3, 0, 0, 0).getTime(),
+      track: false,
+    }),
+  ]
+
+  const result = calculateSecondsTrackedForDay({
+    events,
+    day: new Date(2000, 0, 2, 1, 0, 0).getTime(),
+  })
+
+  expect(result).toEqual(30)
 })

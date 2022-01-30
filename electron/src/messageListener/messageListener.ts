@@ -6,6 +6,7 @@ import { generateReport } from './impl/generateReport'
 import { getCurrentEvent } from './impl/getCurrentEvent'
 import { getTrackingNames } from './impl/getTrackingNames'
 import { newEvent } from './impl/newEvent'
+import { secondsTrackedForDay } from './impl/secondsTrackedForDay'
 import { updateEvent } from './impl/updateEvent'
 
 type EventHandler = (env: Environment, args: any) => Promise<void>
@@ -18,6 +19,7 @@ const initHandlers = (): Map<Messages, EventHandler> => {
     [Messages.GetTrackingNames, getTrackingNames],
     [Messages.ClearDatabase, clearDatabase],
     [Messages.UpdateEvent, updateEvent],
+    [Messages.GetSecondsTrackedForDay, secondsTrackedForDay],
   ])
 }
 
