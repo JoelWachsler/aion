@@ -20,7 +20,14 @@ it('should convert result to report', () => {
     },
   ]
 
-  const report = convertResultToReportPresentation(result, { from: new Date(2000, 0, 1), to: new Date(2000, 0, 3) })
+  const report = convertResultToReportPresentation(
+    result,
+    {
+      from: new Date(2000, 0, 1).getTime(),
+      to: new Date(2000, 0, 3).getTime(),
+    },
+  )
+
   expect(report).toEqual([
     {
       name: 'First',

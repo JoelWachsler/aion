@@ -16,8 +16,8 @@ it('should aggregate a single timestamp event for a single day', () => {
 
   const result = timeAggregator({
     events,
-    from: new Date(2000, 0, 1, 0, 0, 0),
-    to: new Date(2000, 0, 2, 0, 0, 0),
+    from: new Date(2000, 0, 1, 0, 0, 0).getTime(),
+    to: new Date(2000, 0, 2, 0, 0, 0).getTime(),
   })
   expect(result).toEqual([
     {
@@ -49,8 +49,8 @@ it('should aggregate two timestamp events for a single day', () => {
 
   const result = timeAggregator({
     events,
-    from: new Date(2000, 0, 1, 0, 0, 0),
-    to: new Date(2000, 0, 2, 0, 0, 0),
+    from: new Date(2000, 0, 1, 0, 0, 0).getTime(),
+    to: new Date(2000, 0, 2, 0, 0, 0).getTime(),
   })
   expect(result).toEqual([
     {
@@ -82,8 +82,8 @@ it('should split if spanning over a multiple days', () => {
 
   const result = timeAggregator({
     events,
-    from: new Date(2000, 0, 1, 0, 0, 0),
-    to: new Date(2000, 0, 3, 0, 0, 0),
+    from: new Date(2000, 0, 1, 0, 0, 0).getTime(),
+    to: new Date(2000, 0, 3, 0, 0, 0).getTime(),
   })
   expect(result).toEqual([
     {
@@ -120,8 +120,8 @@ it('should skip events where tracking is false', () => {
 
   const result = timeAggregator({
     events,
-    from: new Date(2000, 0, 1, 0, 0, 0),
-    to: new Date(2000, 0, 2, 0, 0, 0),
+    from: new Date(2000, 0, 1, 0, 0, 0).getTime(),
+    to: new Date(2000, 0, 2, 0, 0, 0).getTime(),
   })
   expect(result).toEqual([
     {
@@ -148,14 +148,14 @@ it('should clip events if outside tracking dates', () => {
 
   const result = timeAggregator({
     events,
-    from: new Date(2000, 0, 1, 1, 0, 0),
-    to: new Date(2000, 0, 1, 1, 30, 0),
+    from: new Date(2000, 0, 1, 1, 0, 0).getTime(),
+    to: new Date(2000, 0, 1, 1, 0, 30).getTime(),
   })
   expect(result).toEqual([
     {
       date: new Date(2000, 0, 1).getTime(),
       name: 'First',
-      seconds: 3600 / 2,
+      seconds: 30,
     },
   ])
 })

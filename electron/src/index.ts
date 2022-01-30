@@ -2,7 +2,7 @@ import path from 'path'
 import { app, BrowserWindow } from 'electron'
 import { factory as envFactory } from './environment/environment'
 import { factory as lockHandlerFactory } from './lockHandler/lockHandler'
-import { addEvent } from './messageListener/messageListener'
+import { addEvent, init as messageListenerInit } from './messageListener/messageListener'
 import { Messages } from './messages'
 import { createTimeEvent } from './timeAggregator'
 
@@ -45,6 +45,8 @@ app.whenReady().then(async() => {
       env.sendMessage(Messages.ManualEventHandling, currentEvent)
     },
   })
+
+  messageListenerInit(env)
 
   // setInterval(() => {
   //   console.log(powerMonitor.getSystemIdleState(1))

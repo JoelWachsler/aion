@@ -8,8 +8,8 @@ export interface TimeEvent {
 }
 
 export interface Interval {
-  from: Date
-  to: Date
+  from: number
+  to: number
 }
 
 interface TimeAggregatorArgs extends Interval {
@@ -56,8 +56,8 @@ export const timeAggregator = ({ events, from, to }: TimeAggregatorArgs): TimeAg
   }
 
   let lastEventTime = lastEvent.timestamp
-  if (lastEventTime > to.getTime()) {
-    lastEventTime = to.getTime()
+  if (lastEventTime > to) {
+    lastEventTime = to
   }
 
   const timeAggr = new Map<number, Map<string, TimeAggregatorResult>>()

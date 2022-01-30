@@ -13,7 +13,8 @@ const zeroPadding = (num: number): string => {
   }
 }
 
-const dateToString = (date: Date) => {
+const dateToString = (timestamp: number) => {
+  const date = new Date(timestamp)
   return `${date.getFullYear()}-${zeroPadding(date.getMonth() + 1)}-${zeroPadding(date.getDate())}`
 }
 
@@ -21,8 +22,8 @@ const toHoursWithTwoDecimals = (seconds: number): number => {
   return Math.round(seconds / 3600 * 100) / 100
 }
 
-const incrementDateByOneDay = (date: Date): Date => {
-  return new Date(date.getTime() + 24 * 3600 * 1000)
+const incrementDateByOneDay = (date: number): number => {
+  return date + 24 * 3600 * 1000
 }
 
 export const convertResultToReportPresentation = (
@@ -39,7 +40,7 @@ export const convertResultToReportPresentation = (
       names.set(name, nameLookup)
     }
 
-    const dateAsString = dateToString(new Date(date))
+    const dateAsString = dateToString(date)
     nameLookup.set(dateAsString, seconds)
   }
 
@@ -49,7 +50,7 @@ export const convertResultToReportPresentation = (
     const nameReport: ReportValue = { name }
     let currentDate = interval.from
 
-    while (currentDate.getTime() <= interval.to.getTime()) {
+    while (currentDate <= interval.to) {
       const dateString = dateToString(currentDate)
       const seconds = dateStringLookup.get(dateString)
       nameReport[dateString] = toHoursWithTwoDecimals(seconds ?? 0)

@@ -47,8 +47,8 @@ export default defineComponent({
         currentDate.value = new Date()
       }, 1000)
 
-      sendMessage(Messages.GetCurrentEvent, null)
-      sendMessage(Messages.GetTrackingNames, null)
+      sendMessage(Messages.GetCurrentEvent)
+      sendMessage(Messages.GetTrackingNames)
     })
 
     useMessageListener(Messages.TrackingNamesUpdates, (_, trackingNames: string[]) => {

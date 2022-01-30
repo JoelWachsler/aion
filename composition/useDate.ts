@@ -1,20 +1,21 @@
 import { computed, Ref } from '@nuxtjs/composition-api'
 
-export const firstDayOfWeek = (date: Date) => {
+export const firstDayOfWeek = (date: Date): number => {
   const dateAtMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate())
-  const currentDay = dateAtMidnight.getDay()
+  // sunday is 0 -> convert such that monday is 0
+  const currentDay = (dateAtMidnight.getDay() + 6) % 7
 
-  return new Date(dateAtMidnight.getTime() - (currentDay - 1) * 24 * 3600 * 1000)
+  return new Date(dateAtMidnight.getTime() - currentDay * 24 * 3600 * 1000).getTime()
 }
 
 /**
- * Returns the first and last day (non inclusive) of the week of the provided date.
+ * Returns the first and last day (inclusive) of the week of the provided date.
  */
 export const firstAndLastDayOfWeek = (date: Date) => {
-  const first = firstDayOfWeek(date)
+  const from = firstDayOfWeek(date)
   return {
-    first,
-    last: new Date(first.getTime() + 24 * 7 * 3600 * 1000),
+    from,
+    to: from + 24 * 6 * 3600 * 1000,
   }
 }
 
