@@ -12,4 +12,6 @@ export enum Messages {
   UpdateEvent = 'update-event',
   GetSecondsTrackedForDay = 'get-seconds-tracked-for-day',
   SecondsTrackedForDay = 'seconds-tracked-for-day',
+  SendNotification = 'send-notification',
+  UiReady = 'ui-ready',
 }

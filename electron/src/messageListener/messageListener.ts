@@ -7,6 +7,8 @@ import { getCurrentEvent } from './impl/getCurrentEvent'
 import { getTrackingNames } from './impl/getTrackingNames'
 import { newEvent } from './impl/newEvent'
 import { secondsTrackedForDay } from './impl/secondsTrackedForDay'
+import { sendNotification } from './impl/sendNotification'
+import { uiReady } from './impl/uiReady'
 import { updateEvent } from './impl/updateEvent'
 
 type EventHandler = (env: Environment, args: any) => Promise<void>
@@ -20,6 +22,8 @@ const initHandlers = (): Map<Messages, EventHandler> => {
     [Messages.ClearDatabase, clearDatabase],
     [Messages.UpdateEvent, updateEvent],
     [Messages.GetSecondsTrackedForDay, secondsTrackedForDay],
+    [Messages.SendNotification, sendNotification],
+    [Messages.UiReady, uiReady],
   ])
 }
 
@@ -43,12 +47,7 @@ export const addEvent = async(env: Environment, newEvent: TimeEvent) => {
   }
 
   const data = await env.getOrCreateDbData()
-  const { currentEvent, events, trackingNames } = data
-
-  if (currentEvent && newEvent.name === currentEvent.name && newEvent.track === currentEvent.track) {
-    // unnecessary update -> ignore it
-    return
-  }
+  const { events, trackingNames } = data
 
   events.push(newEvent)
   data.currentEvent = newEvent

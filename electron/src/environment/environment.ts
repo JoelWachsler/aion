@@ -15,13 +15,14 @@ export interface Environment {
   logger: Logger
   clearDatabase(): Promise<void>
   saveDb(): Promise<void>
+  sendHeartbeat(): Promise<void>
 }
 
-export const factory = async (win: BrowserWindow): Promise<Environment> => {
+export const factory = async(win: BrowserWindow): Promise<Environment> => {
   const db = initDb()
   await db.read()
 
-  const getOrCreateDbData = async (): Promise<DbV1> => {
+  const getOrCreateDbData = async(): Promise<DbV1> => {
     if (!db.data) {
       db.data = defaultDatabase()
       await db.write()
@@ -45,7 +46,7 @@ export const factory = async (win: BrowserWindow): Promise<Environment> => {
     },
     getOrCreateDbData,
     handleMessages(handle) {
-      win.webContents.on('ipc-message', async (_, channel, args) => {
+      win.webContents.on('ipc-message', async(_, channel, args) => {
         await handle(channel as Messages, args)
       })
     },
@@ -55,6 +56,11 @@ export const factory = async (win: BrowserWindow): Promise<Environment> => {
       await db.write()
     },
     async saveDb() {
+      await db.write()
+    },
+    async sendHeartbeat() {
+      const data = await getOrCreateDbData()
+      data.heartbeat = Date.now()
       await db.write()
     },
   }
@@ -70,6 +76,7 @@ const defaultDatabase = (): DbV1 => {
     events: [initialEvent],
     trackingNames: [initialEvent.name],
     currentEvent: initialEvent,
+    heartbeat: Date.now(),
   }
 }
 

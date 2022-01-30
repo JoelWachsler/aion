@@ -32,17 +32,25 @@
   </v-row>
 </template>
 <script lang="ts">
-import { computed, defineComponent, onBeforeUnmount, onMounted, ref } from '@nuxtjs/composition-api'
-import { Messages } from '~/electron/src/messages'
-import { UpdateEventArgs } from '~/electron/src/messageListener/impl/updateEvent'
-import { TimeEvent } from '~/electron/src/timeAggregator'
-import { useMessageListener } from '~/composition/useMessageListener'
+import { computed, defineComponent, onBeforeUnmount, onMounted, ref, watch } from '@nuxtjs/composition-api'
 import { sendMessage } from '~/composition/useMessage'
+import { useMessageListener } from '~/composition/useMessageListener'
+import { UpdateEventArgs } from '~/electron/src/messageListener/impl/updateEvent'
+import { Messages } from '~/electron/src/messages'
+import { TimeEvent } from '~/electron/src/timeAggregator'
 
 export default defineComponent({
   setup() {
     const eventToHandle = ref<TimeEvent | undefined>()
     const dialog = computed(() => eventToHandle.value !== undefined)
+
+    watch(dialog, shouldDisplay => {
+      if (shouldDisplay) {
+        // eslint-disable-next-line no-new
+        // new Notification({ title: 'Action required' })
+        sendMessage(Messages.SendNotification, { title: 'Action required' })
+      }
+    })
 
     const awayTimestamp = computed(() => eventToHandle.value?.timestamp ?? 0)
     const currentTimestamp = ref(Date.now())
@@ -57,6 +65,8 @@ export default defineComponent({
       intervalRef = setInterval(() => {
         currentTimestamp.value = Date.now()
       }, 1000)
+
+      sendMessage(Messages.UiReady)
     })
 
     onBeforeUnmount(() => {

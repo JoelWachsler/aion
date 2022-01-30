@@ -8,6 +8,7 @@ export interface DbV1 {
   events: TimeEvent[],
   trackingNames: string[],
   currentEvent: TimeEvent,
+  heartbeat: number,
 }
 
 export const initDb = () => {
