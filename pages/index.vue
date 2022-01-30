@@ -19,9 +19,8 @@ import {
   computed,
   defineComponent,
   onMounted,
-  ref,
+  ref
 } from '@nuxtjs/composition-api'
-import { getTrailingCommentRanges } from 'typescript'
 import { sendMessage } from '~/composition/useMessage'
 import { useMessageListener } from '~/composition/useMessageListener'
 import { Messages } from '~/electron/src/messages'
