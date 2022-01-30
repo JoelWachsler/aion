@@ -1,4 +1,4 @@
-import { firstAndLastDayOfWeek, firstDayOfWeek } from './useDate'
+import { weekForDate, firstDayOfWeek } from './useDate'
 
 it('should find first day of week', () => {
   // friday
@@ -18,9 +18,9 @@ it('should find first and last day of week', () => {
   // friday
   const date = new Date(2022, 0, 28)
 
-  expect(firstAndLastDayOfWeek(date)).toEqual({
+  expect(weekForDate(date)).toEqual({
     from: new Date(2022, 0, 24).getTime(),
-    to: new Date(2022, 0, 30).getTime(),
+    to: new Date(2022, 0, 31).getTime() - 1,
   })
 })
 
@@ -28,8 +28,8 @@ it('should find first and last day of week on sunday', () => {
   // sunday
   const date = new Date(2022, 0, 30)
 
-  expect(firstAndLastDayOfWeek(date)).toEqual({
+  expect(weekForDate(date)).toEqual({
     from: new Date(2022, 0, 24).getTime(),
-    to: new Date(2022, 0, 30).getTime(),
+    to: new Date(2022, 0, 31).getTime() - 1,
   })
 })

@@ -45,7 +45,7 @@ export default defineComponent({
     const dialog = computed(() => eventToHandle.value !== undefined)
 
     const awayTimestamp = computed(() => eventToHandle.value?.timestamp ?? 0)
-    const currentTimestamp = ref(new Date().getTime())
+    const currentTimestamp = ref(Date.now())
 
     const awayCounter = computed(() => {
       const seconds = Math.round((currentTimestamp.value - awayTimestamp.value) / 1000)
@@ -55,7 +55,7 @@ export default defineComponent({
     let intervalRef: ReturnType<typeof setInterval> | undefined
     onMounted(() => {
       intervalRef = setInterval(() => {
-        currentTimestamp.value = new Date().getTime()
+        currentTimestamp.value = Date.now()
       }, 1000)
     })
 
@@ -80,7 +80,7 @@ export default defineComponent({
         }
         sendMessage(Messages.UpdateEvent, msg)
         eventToHandle.value = undefined
-        sendMessage(Messages.GetSecondsTrackedForDay, new Date().getTime())
+        sendMessage(Messages.GetSecondsTrackedForDay, Date.now())
       },
       doNotTrack() {
         const lastEvent = eventToHandle.value
@@ -96,7 +96,7 @@ export default defineComponent({
 
           // track the current event
           sendMessage(Messages.NewEvent, lastEvent.name)
-          sendMessage(Messages.GetSecondsTrackedForDay, new Date().getTime())
+          sendMessage(Messages.GetSecondsTrackedForDay, Date.now())
         }
       },
       awayCounter,

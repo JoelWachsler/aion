@@ -9,7 +9,6 @@
           full-width
           color="primary"
           :show-week="true"
-          selected-items-text=""
         />
       </v-col>
     </v-row>
@@ -22,36 +21,31 @@
 import { computed, defineComponent, onBeforeUnmount, onMounted, ref, watch } from '@nuxtjs/composition-api'
 import { Interval, TimeAggregatorResult } from 'electron/src/timeAggregator'
 import { Messages } from '~/electron/src/messages'
-import { useDate } from '~/composition/useDate'
+import { getDateOffset, useDate } from '~/composition/useDate'
 import { sendMessage } from '~/composition/useMessage'
 import { useMessageListener } from '~/composition/useMessageListener'
 import { useReport } from '~/composition/useReport'
 
 export default defineComponent({
   setup() {
-    const getOffset = (date: number) => {
-      return new Date(date).getTimezoneOffset() * 60 * 1000
-    }
-
     const toISOStr = (date: number) => {
-      return new Date(date - getOffset(date)).toISOString().substring(0, 10)
+      return new Date(date - getDateOffset(date)).toISOString().substring(0, 10)
     }
 
     const fromISOStr = (str: string): number => {
       const [year, month, day] = str.split('-')
-      const localTimestamp = new Date(Number(year), Number(month) - 1, Number(day))
-      return localTimestamp.getTime() + getOffset(localTimestamp.getTime())
+      return new Date(Number(year), Number(month) - 1, Number(day)).getTime()
     }
 
-    const date = useDate(ref(new Date().getTime()))
+    const date = useDate(ref(Date.now()))
     const result = ref<TimeAggregatorResult[]>([])
 
     useMessageListener(Messages.NewReport, (_, message: TimeAggregatorResult[]) => {
       result.value = message
     })
 
-    const currentDate = new Date()
-    const interval = ref<Interval>({ from: currentDate.getTime(), to: currentDate.getTime() })
+    const currentDate = Date.now()
+    const interval = ref<Interval>({ from: currentDate, to: currentDate })
 
     const generateReport = () => {
       console.log(`Generating report for value: ${JSON.stringify(interval.value)}`)
@@ -98,7 +92,8 @@ export default defineComponent({
         const v = tmpDatePickerInterval.value
         if (v.length === 2) {
           // to-date has to be a day after in order to include the whole day in the report
-          const toDate = new Date(fromISOStr(v[1]) + 24 * 3600 * 1000)
+          console.log(v)
+          const toDate = new Date(fromISOStr(v[1]) + 24 * 3600 * 1000 - 1)
           updateInterval({ from: fromISOStr(v[0]), to: toDate.getTime() })
         }
       },
@@ -106,7 +101,7 @@ export default defineComponent({
 
     return {
       datePickerInterval,
-      currentDate: toISOStr(currentDate.getTime()),
+      currentDate: toISOStr(currentDate),
       dates: ref([]),
       ...useReport({
         result,

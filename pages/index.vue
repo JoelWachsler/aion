@@ -29,11 +29,11 @@ import { TimeEvent } from '~/electron/src/timeAggregator'
 export default defineComponent({
   setup() {
     const locked = ref(false)
-    const initDate = ref(new Date())
-    const currentDate = ref(new Date())
+    const initDate = ref(Date.now())
+    const currentDate = ref(Date.now())
     const workCounter = computed(() => {
       const seconds = Math.round(
-        (currentDate.value.getTime() - initDate.value.getTime()) / 1000,
+        (currentDate.value - initDate.value) / 1000,
       )
       return new Date(seconds * 1000).toISOString().substr(11, 8)
     })
@@ -43,17 +43,17 @@ export default defineComponent({
 
     onMounted(() => {
       setInterval(() => {
-        currentDate.value = new Date()
+        currentDate.value = Date.now()
       }, 1000)
 
       sendMessage(Messages.GetCurrentEvent)
       sendMessage(Messages.GetTrackingNames)
-      sendMessage(Messages.GetSecondsTrackedForDay, new Date().getTime())
+      sendMessage(Messages.GetSecondsTrackedForDay, Date.now())
     })
 
     useMessageListener(Messages.SecondsTrackedForDay, (_, secondsTracked: number) => {
       // don't question this :)
-      initDate.value = new Date(currentDate.value.getTime() - secondsTracked * 1000)
+      initDate.value = new Date(currentDate.value - secondsTracked * 1000).getTime()
     })
 
     useMessageListener(Messages.TrackingNamesUpdates, (_, trackingNames: string[]) => {

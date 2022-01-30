@@ -28,7 +28,7 @@ export const createTimeEvent = (
 ): TimeEvent => {
   return {
     id: uuidv4(),
-    timestamp: new Date().getTime(),
+    timestamp: Date.now(),
     ...args,
   }
 }
