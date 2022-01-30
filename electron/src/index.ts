@@ -70,7 +70,7 @@ app.whenReady().then(async() => {
       idleCounter = 0
 
       // 15 minutes
-      if (counter > 15) {
+      if (counter > 900) {
         {
           const { currentEvent } = await env.getOrCreateDbData()
           await addEvent(env, createTimeEvent({
