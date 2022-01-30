@@ -1,7 +1,7 @@
 
 import { computed, Ref } from '@nuxtjs/composition-api'
 import { DataTableHeader } from 'vuetify'
-import { Interval, TimeAggregatorResult } from '~/.electron/src/timeAggregator'
+import { Interval, TimeAggregatorResult } from '~/electron/src/timeAggregator'
 
 type ReportValue = {[key: string]: number | string}
 

@@ -10,15 +10,7 @@
     "noEmit": false,
     "experimentalDecorators": true,
     "outDir": "./dist",
-    "baseUrl": ".",
-    "paths": {
-      "~/*": [
-        "./*",
-      ],
-      "@/*": [
-        "./*",
-      ],
-    },
+    "baseUrl": "electron/src",
     "types": [
       "@types/node",
       "@types/jest",

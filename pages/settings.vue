@@ -9,7 +9,7 @@
 </template>
 <script lang="ts">
 import { defineComponent } from '@nuxtjs/composition-api'
-import { Messages } from '~/.electron/src/messages'
+import { Messages } from '~/electron/src/messages'
 import { win } from '~/composition/useWindow'
 
 export default defineComponent({

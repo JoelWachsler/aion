@@ -1,5 +1,5 @@
 import { Low, JSONFile } from 'lowdb'
-import { TimeEvent } from './timeAggregator'
+import { TimeEvent } from '../timeAggregator'
 
 export interface DbV1 {
   meta: {
@@ -10,6 +10,6 @@ export interface DbV1 {
   currentEvent: TimeEvent,
 }
 
-export const initDb = () => {
+export const initDb = () => {
   return new Low<DbV1>(new JSONFile('./aion.json'))
 }

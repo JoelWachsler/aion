@@ -19,14 +19,13 @@
 import {
   computed,
   defineComponent,
-  onBeforeUnmount,
   onMounted,
   ref,
 } from '@nuxtjs/composition-api'
-import { IpcRendererEvent } from 'electron'
-import { TimeEvent } from '~/.electron/src/timeAggregator'
-import { win } from '~/composition/useWindow'
-import { Messages } from '~/.electron/src/messages'
+import { Messages } from '~/electron/src/messages'
+import { TimeEvent } from '~/electron/src/timeAggregator'
+import { sendMessage } from '~/composition/useMessage'
+import { useMessageListener } from '~/composition/useMessageListener'
 
 export default defineComponent({
   setup() {
@@ -48,31 +47,16 @@ export default defineComponent({
         currentDate.value = new Date()
       }, 1000)
 
-      win.ipcRenderer?.send(Messages.GetCurrentEvent, null)
-      win.ipcRenderer?.send(Messages.GetTrackingNames, null)
+      sendMessage(Messages.GetCurrentEvent, null)
+      sendMessage(Messages.GetTrackingNames, null)
     })
 
-    const trackingNameUpdatesListener = {
-      name: Messages.TrackingNamesUpdates,
-      listener: (_: IpcRendererEvent, trackingNames: string[]) => {
-        eventNames.value = trackingNames
-      },
-    }
+    useMessageListener(Messages.TrackingNamesUpdates, (_, trackingNames: string[]) => {
+      eventNames.value = trackingNames
+    })
 
-    win.ipcRenderer?.on(trackingNameUpdatesListener.name, trackingNameUpdatesListener.listener)
-
-    const currentEventListener = {
-      name: Messages.CurrentEvent,
-      listener: (_: IpcRendererEvent, message: TimeEvent) => {
-        eventName.value = message.name
-      },
-    }
-
-    win.ipcRenderer?.on(currentEventListener.name, currentEventListener.listener)
-
-    onBeforeUnmount(() => {
-      win.ipcRenderer?.off(trackingNameUpdatesListener.name, trackingNameUpdatesListener.listener)
-      win.ipcRenderer?.off(currentEventListener.name, currentEventListener.listener)
+    useMessageListener(Messages.CurrentEvent, (_, message: TimeEvent) => {
+      eventName.value = message.name
     })
 
     return {
@@ -81,7 +65,7 @@ export default defineComponent({
       locked,
       workCounter,
       updateEventName() {
-        win.ipcRenderer?.send(Messages.NewEvent, eventName.value)
+        sendMessage(Messages.NewEvent, eventName.value)
       },
     }
   },

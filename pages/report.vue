@@ -6,30 +6,21 @@
   </v-container>
 </template>
 <script lang="ts">
-import { computed, defineComponent, onBeforeUnmount, onMounted, onUnmounted, ref } from '@nuxtjs/composition-api'
-import { IpcRendererEvent } from 'electron'
-import { TimeAggregatorResult } from '.electron/src/timeAggregator'
+import { computed, defineComponent, onBeforeUnmount, onMounted, ref } from '@nuxtjs/composition-api'
+import { TimeAggregatorResult } from 'electron/src/timeAggregator'
+import { Messages } from '~/electron/src/messages'
 import { useDate } from '~/composition/useDate'
+import { sendMessage } from '~/composition/useMessage'
+import { useMessageListener } from '~/composition/useMessageListener'
 import { useReport } from '~/composition/useReport'
-import { win } from '~/composition/useWindow'
-import { Messages } from '~/.electron/src/messages'
 
 export default defineComponent({
   setup() {
     const date = useDate(ref(new Date().getTime()))
     const result = ref<TimeAggregatorResult[]>([])
 
-    const newReportListener = {
-      name: Messages.NewReport,
-      listener: (_: IpcRendererEvent, message: TimeAggregatorResult[]) => {
-        result.value = message
-      },
-    }
-
-    win.ipcRenderer?.on(newReportListener.name, newReportListener.listener)
-
-    onUnmounted(() => {
-      win.ipcRenderer?.off(newReportListener.name, newReportListener.listener)
+    useMessageListener(Messages.NewReport, (_, message: TimeAggregatorResult[]) => {
+      result.value = message
     })
 
     const currentWeek = computed(() => {
@@ -42,7 +33,7 @@ export default defineComponent({
     })
 
     const generateReport = () => {
-      win.ipcRenderer?.send(Messages.GenerateReport, currentWeek.value)
+      sendMessage(Messages.GenerateReport, currentWeek.value)
     }
 
     let reportRefresher: ReturnType<typeof setInterval> | null

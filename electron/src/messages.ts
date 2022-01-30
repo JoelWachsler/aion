@@ -8,5 +8,6 @@ export enum Messages {
   ClearDatabase = 'clear-database',
   TrackingNamesUpdates = 'tracking-names-updated',
   NewReport = 'new-report',
+  ManualEventHandling = 'manual-event-handling',
+  UpdateEvent = 'update-event',
 }
-

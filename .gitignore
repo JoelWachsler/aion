@@ -90,4 +90,7 @@ sw.*
 *.swp
 
 aion.json
+
 out
+
+electron/dist

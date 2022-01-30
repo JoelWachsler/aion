@@ -1,5 +1,5 @@
 import { convertResultToReportPresentation } from './useReport'
-import { TimeAggregatorResult } from '~/.electron/src/timeAggregator'
+import { TimeAggregatorResult } from '~/electron/src/timeAggregator'
 
 it('should convert result to report', () => {
   const result: TimeAggregatorResult[] = [

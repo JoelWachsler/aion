@@ -7,13 +7,13 @@ export interface TimeEvent {
   track: boolean
 }
 
-interface TimeAggregatorArgs extends Interval {
-  events: TimeEvent[]
-}
-
 export interface Interval {
   from: Date
   to: Date
+}
+
+interface TimeAggregatorArgs extends Interval {
+  events: TimeEvent[]
 }
 
 export interface TimeAggregatorResult {
@@ -22,7 +22,10 @@ export interface TimeAggregatorResult {
   seconds: number
 }
 
-export const createTimeEvent = (args: Omit<TimeEvent, 'id' | 'timestamp'> & { id?: TimeEvent['id'], timestamp?: TimeEvent['timestamp'] }): TimeEvent => {
+export const createTimeEvent = (
+  args: Omit<TimeEvent, 'id' | 'timestamp'> & { id?: TimeEvent['id'],
+  timestamp?: TimeEvent['timestamp'] },
+): TimeEvent => {
   return {
     id: uuidv4(),
     timestamp: new Date().getTime(),
@@ -49,7 +52,7 @@ export const timeAggregator = ({ events, from, to }: TimeAggregatorArgs): TimeAg
 
   const lastEvent = reverseEvents[0]
   if (!lastEvent) {
-    throw Error('No events defined!')
+    throw new Error('No events defined!')
   }
 
   let lastEventTime = lastEvent.timestamp
