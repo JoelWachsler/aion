@@ -1,4 +1,4 @@
-import { createTimeEvent, calculateSecondsTrackedForDay, timeAggregator, TimeEvent } from './timeAggregator'
+import { calculateSecondsTrackedForDay, createTimeEvent, timeAggregator, TimeEvent } from './timeAggregator'
 
 it('should aggregate a single timestamp event for a single day', () => {
   const events: TimeEvent[] = [
