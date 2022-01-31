@@ -49,11 +49,6 @@ jobs:
         run: yarn dist
 
       - name: Upload artifacts
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+        uses: softprops/action-gh-release@v1
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./out/aion.linux-amd64.deb
-          asset_name: aion.linux-amd64.deb
-          asset_content_type: application/gzip
+          files: ./out/aion.linux-amd64.deb
