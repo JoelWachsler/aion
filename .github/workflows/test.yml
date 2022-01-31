@@ -102,5 +102,5 @@ jobs:
         if: steps.yarn-cache.outputs.cache-hit != 'true'
         run: yarn
 
-      - name: Lint
+      - name: Build release binaries
         run: yarn dist
