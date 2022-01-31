@@ -16,6 +16,7 @@
     }
   },
   "scripts": {
+    "postversion": "git push --follow-tags",
     "predist": "yarn generate && yarn build:electron",
     "dist": "node -r ts-node/register .electron-builder/build.ts",
     "dev": "nuxt",

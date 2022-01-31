@@ -27,6 +27,7 @@ const main = async() => {
         '!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}'
       ],
       linux: {
+        artifactName: 'aion.linux-amd64.deb',
         desktop: {
           target: ['deb'],
         },
